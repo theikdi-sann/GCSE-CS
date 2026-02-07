@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GCSE Sorting Algorithms Visualizer & Game</title>
+    <title>GCSE Algorithm Visualizer: Sort & Search</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -18,9 +18,9 @@
             font-family: 'Fredoka', sans-serif;
         }
 
-        /* Smooth transitions for moving elements */
+        /* Smooth transitions */
         .array-item {
-            transition: transform 0.3s ease-in-out, background-color 0.3s, border-color 0.3s;
+            transition: transform 0.3s ease-in-out, background-color 0.3s, border-color 0.3s, opacity 0.3s;
         }
 
         /* Bubble Sort Specific Styles */
@@ -77,6 +77,23 @@
             border-color: #f97316; /* Orange-500 */
         }
 
+        /* Binary Search Styles */
+        .marker-arrow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .marker-arrow i {
+            font-size: 1.25rem;
+            margin-bottom: -2px;
+        }
+
         /* Game Specific Animations */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -120,22 +137,26 @@
 
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-slate-200 p-4 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-600 text-white p-2 rounded-lg">
-                    <i class="fas fa-sort-numeric-down text-xl"></i>
+                    <i class="fas fa-microchip text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-800">GCSE Sort Master</h1>
+                    <h1 class="text-2xl font-bold text-slate-800">GCSE Algo Master</h1>
                     <p class="text-sm text-slate-500">Visualizer & Practice Game</p>
                 </div>
             </div>
 
-            <div class="flex bg-slate-100 p-1 rounded-lg">
-                <button onclick="switchMode('bubble')" id="btn-bubble" class="px-4 py-2 rounded-md font-semibold text-sm transition-all bg-white shadow text-blue-600">Bubble Sim</button>
-                <button onclick="switchMode('merge')" id="btn-merge" class="px-4 py-2 rounded-md font-semibold text-sm transition-all text-slate-500 hover:text-slate-700">Merge Sim</button>
-                <button onclick="switchMode('game-menu')" id="btn-game" class="px-4 py-2 rounded-md font-semibold text-sm transition-all text-purple-600 hover:bg-purple-50">
-                    <i class="fas fa-gamepad mr-1"></i> Practice Game
+            <div class="flex flex-wrap gap-2 bg-slate-100 p-1 rounded-lg justify-center">
+                <button onclick="switchMode('bubble')" id="btn-bubble" class="px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all bg-white shadow text-blue-600">Bubble</button>
+                <button onclick="switchMode('merge')" id="btn-merge" class="px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-slate-500 hover:text-slate-700">Merge</button>
+                <div class="w-px bg-slate-300 mx-1"></div>
+                <button onclick="switchMode('linear')" id="btn-linear" class="px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-slate-500 hover:text-slate-700">Linear</button>
+                <button onclick="switchMode('binary')" id="btn-binary" class="px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-slate-500 hover:text-slate-700">Binary</button>
+                <div class="w-px bg-slate-300 mx-1"></div>
+                <button onclick="switchMode('game-menu')" id="btn-game" class="px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-purple-600 hover:bg-purple-50">
+                    <i class="fas fa-gamepad mr-1"></i> Practice
                 </button>
             </div>
         </div>
@@ -154,6 +175,7 @@
                 </h2>
 
                 <div class="space-y-4">
+                    <!-- Standard Data Input -->
                     <div>
                         <label class="block text-sm font-medium text-slate-600 mb-1">Data Input</label>
                         <div class="flex gap-2">
@@ -162,6 +184,12 @@
                                 <i class="fas fa-dice"></i>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Search Target Input (Hidden for Sort) -->
+                    <div id="target-input-container" class="hidden">
+                        <label class="block text-sm font-medium text-slate-600 mb-1 text-green-700">Number to Find</label>
+                        <input type="number" id="targetInput" value="6" class="w-full border border-green-300 bg-green-50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none font-mono font-bold text-green-800">
                     </div>
 
                     <div>
@@ -174,7 +202,7 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 pt-2">
-                        <button onclick="startSort()" id="btn-start" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition-colors">
+                        <button onclick="startSim()" id="btn-start" class="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold transition-colors">
                             <i class="fas fa-play mr-1"></i> Start
                         </button>
                         <button onclick="resetApp()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-lg font-bold transition-colors">
@@ -253,15 +281,15 @@
                         <span id="step-counter" class="text-xs font-mono bg-slate-200 px-2 py-1 rounded text-slate-600">Step: 0</span>
                         <span id="pass-counter" class="text-xs font-mono bg-blue-100 border border-blue-200 px-2 py-1 rounded text-blue-700 font-bold hidden">Pass: -</span>
                     </div>
-                    <div id="status-text" class="font-medium text-slate-700 text-center flex-grow px-4">Ready to sort</div>
+                    <div id="status-text" class="font-medium text-slate-700 text-center flex-grow px-4">Ready</div>
                 </div>
 
                 <!-- Canvas Area -->
                 <div id="visualization-area" class="flex-grow p-6 flex flex-col items-center justify-start overflow-auto bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
-                    <!-- Sorting elements will appear here -->
+                    <!-- Elements will appear here -->
                     <div class="text-slate-400 mt-20 text-center">
                         <i class="fas fa-chalkboard fa-3x mb-4 opacity-50"></i>
-                        <p>Enter numbers and press Start</p>
+                        <p>Select a Mode and Press Start</p>
                     </div>
                 </div>
 
@@ -288,33 +316,70 @@
             type: null, 
             score: 0,
             arr: [],
-            compareIndices: [], // for bubble
-            bubbleI: 0,
-            bubbleJ: 0,
-            waitingForPass: false,
-            
-            // Merge Game specific
-            mergeGamePhase: 'splitting', // 'splitting' or 'merging'
-            mergeSubArrays: [], // Arrays waiting to be merged in current stage
-            nextSubArrays: [], // Arrays produced for next stage
-            mergePairIdx: 0, // Pointer to current pair in subArrays
-            mergeLeft: [],      
-            mergeRight: [],     
-            mergeResult: [],    
-            stage: 1, 
-            maxStages: 3
+            target: null, // For Search Games
+            // Sort Game vars
+            compareIndices: [], 
+            bubbleI: 0, bubbleJ: 0, sortedIndices: new Set(), waitingForPass: false,
+            // Merge Game vars
+            mergeGamePhase: 'splitting', mergeSubArrays: [], nextSubArrays: [], mergePairIdx: 0, mergeLeft: [], mergeRight: [], mergeResult: [], stage: 1, maxStages: 3,
+            // Search Game vars
+            linearIdx: 0,
+            binaryLow: 0, binaryHigh: 0, binaryMid: 0
         };
 
         // --- Content Dictionaries ---
         const THEORY = {
-            bubble: `<p><strong>Bubble Sort</strong> compares pairs of items and swaps them if they are in the wrong order.</p><ul class="list-disc ml-4 mt-2"><li>It passes through the list multiple times.</li><li>Red circles show comparisons.</li></ul>`,
-            merge: `<p><strong>Merge Sort</strong> uses "Divide and Conquer".</p><ul class="list-disc ml-4 mt-2"><li>Split: Divide lists into halves.</li><li>Merge: Combine sub-lists in order.</li></ul>`,
+            bubble: `
+                <div class="space-y-2">
+                    <p class="font-bold text-blue-700">🫧 The "Bubbling Up" Sort</p>
+                    <p>Imagine air bubbles rising to the top of a drink. This algorithm works the same way!</p>
+                    <ul class="list-disc ml-4 space-y-1">
+                        <li>We compare two neighbors.</li>
+                        <li>If the one on the left is bigger, they <strong>swap</strong> places.</li>
+                        <li>We keep doing this until the biggest numbers "bubble" to the end of the list.</li>
+                    </ul>
+                    <p class="text-xs bg-white p-2 rounded border border-blue-200 mt-2"><strong>Good for:</strong> Small lists. It's simple but slow for big tasks.</p>
+                </div>`,
+            merge: `
+                <div class="space-y-2">
+                    <p class="font-bold text-blue-700">🃏 Divide & Conquer</p>
+                    <p>Imagine you have a messy deck of cards. It's easier to sort small piles than one big one.</p>
+                    <ol class="list-decimal ml-4 space-y-1">
+                        <li><strong>Divide:</strong> Split the list in half again and again until you have single items.</li>
+                        <li><strong>Conquer:</strong> Merge the small lists back together, putting the numbers in order as you go.</li>
+                    </ol>
+                    <p class="text-xs bg-white p-2 rounded border border-blue-200 mt-2"><strong>Good for:</strong> Big lists. It's very fast and efficient!</p>
+                </div>`,
+            linear: `
+                <div class="space-y-2">
+                    <p class="font-bold text-blue-700">🔍 The "One-by-One" Search</p>
+                    <p>Imagine looking for your favorite book on a messy shelf.</p>
+                    <ul class="list-disc ml-4 space-y-1">
+                        <li>You look at the first book. Is it the one? No.</li>
+                        <li>You look at the next one. No.</li>
+                        <li>You keep checking every single item until you find it or reach the end.</li>
+                    </ul>
+                    <p class="text-xs bg-white p-2 rounded border border-blue-200 mt-2"><strong>Note:</strong> Works on ANY list, sorted or messy, but can be slow.</p>
+                </div>`,
+            binary: `
+                <div class="space-y-2">
+                    <p class="font-bold text-blue-700">✂️ The "High-Low" Game</p>
+                    <p>This is a superpower search, but the list <strong>MUST be sorted</strong> first!</p>
+                    <ul class="list-disc ml-4 space-y-1">
+                        <li>Go to the <strong>middle</strong> of the list.</li>
+                        <li>Is the target smaller? Ignore the whole right side!</li>
+                        <li>Is the target bigger? Ignore the whole left side!</li>
+                    </ul>
+                    <p class="text-xs bg-white p-2 rounded border border-blue-200 mt-2"><strong>Why use it?</strong> It chops the problem in half every step. Super fast!</p>
+                </div>`,
             game: `<p><strong>Practice Mode!</strong> Test your knowledge.</p><p class="mt-2">Choose a game to start. Points are awarded for correct decisions.</p>`
         };
 
         const LEGENDS = {
             bubble: `<div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full border-2 border-red-500"></span> Comparison</div><div class="flex items-center gap-1"><i class="fas fa-exchange-alt text-slate-600"></i> Swap</div>`,
             merge: `<div class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-100 border border-blue-500 rounded"></span> Left</div><div class="flex items-center gap-1"><span class="w-3 h-3 bg-orange-100 border border-orange-500 rounded"></span> Right</div>`,
+            linear: `<div class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-100 border border-yellow-500 rounded"></span> Checking</div><div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-100 border border-green-500 rounded"></span> Found</div>`,
+            binary: `<div class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-100 border border-purple-500 rounded"></span> Mid</div><div class="flex items-center gap-1"><span class="text-xs font-bold text-slate-400">L/H</span> Bounds</div><div class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-100 border border-slate-300 rounded opacity-30"></span> Ignored</div>`,
             game: `Select the correct action or number to proceed.`
         };
 
@@ -327,21 +392,30 @@
         function switchMode(mode) {
             currentMode = mode;
             
-            // Toggle Buttons
-            document.getElementById('btn-bubble').className = mode === 'bubble' ? "px-4 py-2 rounded-md font-semibold text-sm bg-white shadow text-blue-600 border border-slate-100" : "px-4 py-2 rounded-md font-semibold text-sm text-slate-500 hover:text-slate-700";
-            document.getElementById('btn-merge').className = mode === 'merge' ? "px-4 py-2 rounded-md font-semibold text-sm bg-white shadow text-blue-600 border border-slate-100" : "px-4 py-2 rounded-md font-semibold text-sm text-slate-500 hover:text-slate-700";
-            document.getElementById('btn-game').className = mode.includes('game') ? "px-4 py-2 rounded-md font-semibold text-sm bg-purple-600 text-white shadow" : "px-4 py-2 rounded-md font-semibold text-sm text-purple-600 hover:bg-purple-50";
+            // Toggle Buttons Style
+            ['bubble', 'merge', 'linear', 'binary'].forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                if (mode === m) {
+                    btn.className = "px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all bg-white shadow text-blue-600";
+                } else {
+                    btn.className = "px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-slate-500 hover:text-slate-700";
+                }
+            });
+            const gameBtn = document.getElementById('btn-game');
+            gameBtn.className = mode.includes('game') ? "px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all bg-purple-600 text-white shadow" : "px-3 py-2 rounded-md font-semibold text-xs md:text-sm transition-all text-purple-600 hover:bg-purple-50";
 
-            // Toggle Panels
+            // Toggle Panels & Inputs
             const isGame = mode.includes('game');
+            const isSearch = mode === 'linear' || mode === 'binary';
+            
             document.getElementById('sim-controls').classList.toggle('hidden', isGame);
             document.getElementById('game-controls').classList.toggle('hidden', !isGame);
+            document.getElementById('target-input-container').classList.toggle('hidden', !isSearch);
 
             // Update Theory & Legend
             document.getElementById('theory-content').innerHTML = isGame ? THEORY['game'] : THEORY[mode];
             document.getElementById('legend').innerHTML = isGame ? LEGENDS['game'] : LEGENDS[mode];
 
-            // Reset Game Progress Bar
             document.getElementById('game-progress').classList.add('hidden');
 
             if (mode === 'game-menu') {
@@ -350,6 +424,12 @@
                 // Game logic initiated by menu
             } else {
                 resetApp();
+                // If Binary Search Sim selected, auto-sort the input
+                if (mode === 'binary') {
+                    const arr = getInputArray();
+                    arr.sort((a,b) => a-b);
+                    document.getElementById('dataInput').value = arr.join(', ');
+                }
             }
         }
 
@@ -361,16 +441,22 @@
 
         function generateRandom() {
             const arr = Array.from({length: 6}, () => Math.floor(Math.random() * 20) + 1);
+            if (currentMode === 'binary') arr.sort((a,b) => a-b); // Keep sorted for binary
             document.getElementById('dataInput').value = arr.join(', ');
+            
+            // Random target
+            if (arr.length > 0) {
+                 const target = Math.random() > 0.3 ? arr[Math.floor(Math.random() * arr.length)] : 99;
+                 document.getElementById('targetInput').value = target;
+            }
             resetApp();
         }
 
-        // Updated for Stable Animation (Uses Objects with IDs)
+        // 1. Bubble Sort (Sim)
         function generateBubbleFrames(rawArr) {
             let frames = [];
-            let workingArr = rawArr.map((v, i) => ({ val: v, id: i })); // Stable IDs
+            let workingArr = rawArr.map((v, i) => ({ val: v, id: i }));
             let sortedIndices = new Set();
-            
             frames.push({ type: 'bubble', arr: [...workingArr], compare: [], swap: false, sorted: new Set(), msg: "Start", pass: 0 });
 
             for (let i = 0; i < workingArr.length; i++) {
@@ -378,13 +464,8 @@
                 frames.push({ type: 'bubble', arr: [...workingArr], compare: [], sorted: new Set(sortedIndices), msg: `Pass ${i + 1} Start`, pass: i+1 });
                 for (let j = 0; j < workingArr.length - i - 1; j++) {
                     frames.push({ type: 'bubble', arr: [...workingArr], compare: [j, j + 1], sorted: new Set(sortedIndices), msg: `Compare ${workingArr[j].val} and ${workingArr[j+1].val}`, pass: i+1 });
-                    
                     if (workingArr[j].val > workingArr[j + 1].val) {
-                        // Swap objects
-                        let temp = workingArr[j];
-                        workingArr[j] = workingArr[j + 1];
-                        workingArr[j + 1] = temp;
-                        
+                        let temp = workingArr[j]; workingArr[j] = workingArr[j + 1]; workingArr[j + 1] = temp;
                         swapped = true;
                         frames.push({ type: 'bubble', arr: [...workingArr], compare: [j, j + 1], swap: true, sorted: new Set(sortedIndices), msg: `Swap!`, pass: i+1 });
                     }
@@ -395,11 +476,11 @@
                      break;
                 }
             }
-            // Final sorted state
             frames.push({ type: 'bubble', arr: [...workingArr], compare: [], sorted: new Set(Array.from({length: workingArr.length}, (_, i) => i)), msg: "Done!", pass: "End" });
             return frames;
         }
 
+        // 2. Merge Sort (Sim)
         function generateMergeFrames(arr) {
             let frames = [];
             let visualRows = [[{items: [...arr], status: 'neutral'}]];
@@ -442,314 +523,185 @@
             return frames;
         }
 
-        // --- GAME LOGIC ---
+        // 3. Linear Search (Sim)
+        function generateLinearFrames(arr, target) {
+            let frames = [];
+            frames.push({ type: 'linear', arr: arr, currentIdx: -1, foundIdx: -1, msg: `Start searching for ${target}...`, pass: "Start" });
+
+            for(let i=0; i<arr.length; i++) {
+                frames.push({ type: 'linear', arr: arr, currentIdx: i, foundIdx: -1, msg: `Checking index ${i}: Is ${arr[i]} == ${target}?`, pass: `Idx ${i}` });
+                if(arr[i] === target) {
+                    frames.push({ type: 'linear', arr: arr, currentIdx: i, foundIdx: i, msg: `Found ${target} at index ${i}!`, pass: "Found" });
+                    return frames;
+                }
+            }
+            frames.push({ type: 'linear', arr: arr, currentIdx: arr.length, foundIdx: -1, msg: `${target} not found in the list.`, pass: "Not Found" });
+            return frames;
+        }
+
+        // 4. Binary Search (Sim)
+        function generateBinaryFrames(arr, target) {
+            let frames = [];
+            let low = 0;
+            let high = arr.length - 1;
+            
+            // Assume arr is sorted, maybe validated in startSim
+            frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: -1, foundIdx: -1, msg: `Start Binary Search for ${target}.`, pass: "Start" });
+
+            while (low <= high) {
+                let mid = Math.floor((low + high) / 2);
+                frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: mid, foundIdx: -1, msg: `Low: ${low}, High: ${high}. Check Mid (${mid}): ${arr[mid]}`, pass: `Mid ${mid}` });
+
+                if (arr[mid] === target) {
+                    frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: mid, foundIdx: mid, msg: `Found ${target} at index ${mid}!`, pass: "Found" });
+                    return frames;
+                } else if (arr[mid] < target) {
+                    low = mid + 1;
+                    frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: mid, foundIdx: -1, msg: `${arr[mid]} < ${target}. Eliminate left half. New Low: ${low}`, pass: "Right" });
+                } else {
+                    high = mid - 1;
+                    frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: mid, foundIdx: -1, msg: `${arr[mid]} > ${target}. Eliminate right half. New High: ${high}`, pass: "Left" });
+                }
+            }
+            frames.push({ type: 'binary', arr: arr, low: low, high: high, mid: -1, foundIdx: -1, msg: `${target} not found.`, pass: "Not Found" });
+            return frames;
+        }
+
+        // --- GAME MENU & LOGIC ---
 
         function renderGameMenu() {
             const area = document.getElementById('visualization-area');
             area.innerHTML = `
-                <div class="flex flex-col gap-6 items-center mt-10 w-full max-w-md">
-                    <h2 class="text-2xl font-bold text-slate-700">Choose Your Challenge</h2>
-                    
-                    <button onclick="initBubbleGame()" class="w-full bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-red-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
-                        <div class="bg-red-100 text-red-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl group-hover:scale-110 transition-transform">
-                            <i class="fas fa-exchange-alt"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-800">Bubble Sort Challenge</h3>
-                            <p class="text-slate-500 text-sm">Decide: Swap or Don't Swap?</p>
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 w-full max-w-2xl px-4">
+                    <button onclick="initBubbleGame()" class="bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-red-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
+                        <div class="bg-red-100 text-red-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"><i class="fas fa-exchange-alt"></i></div>
+                        <div><h3 class="font-bold text-lg">Bubble Sort</h3><p class="text-slate-500 text-xs">Swap pairs</p></div>
                     </button>
-
-                    <button onclick="initMergeGame()" class="w-full bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-blue-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
-                        <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl group-hover:scale-110 transition-transform">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-slate-800">Merge Sort Challenge</h3>
-                            <p class="text-slate-500 text-sm">Follow the full merge process.</p>
-                        </div>
+                    <button onclick="initMergeGame()" class="bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-blue-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
+                        <div class="bg-blue-100 text-blue-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"><i class="fas fa-layer-group"></i></div>
+                        <div><h3 class="font-bold text-lg">Merge Sort</h3><p class="text-slate-500 text-xs">Split & Merge</p></div>
+                    </button>
+                    <button onclick="initLinearGame()" class="bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-yellow-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
+                        <div class="bg-yellow-100 text-yellow-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"><i class="fas fa-list-ol"></i></div>
+                        <div><h3 class="font-bold text-lg">Linear Search</h3><p class="text-slate-500 text-xs">Check one by one</p></div>
+                    </button>
+                    <button onclick="initBinaryGame()" class="bg-white p-6 rounded-xl shadow-md border-2 border-transparent hover:border-purple-400 hover:shadow-lg transition-all text-left flex items-center gap-4 group">
+                        <div class="bg-purple-100 text-purple-600 w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl"><i class="fas fa-crosshairs"></i></div>
+                        <div><h3 class="font-bold text-lg">Binary Search</h3><p class="text-slate-500 text-xs">Find the middle</p></div>
                     </button>
                 </div>
             `;
             document.getElementById('status-text').innerText = "Select a game mode";
-            document.getElementById('game-instructions').innerText = "Earn points by making the correct algorithm decisions.";
-            document.getElementById('game-score').innerText = "0";
-            document.getElementById('step-counter').innerText = "Game Mode";
             document.getElementById('pass-counter').classList.add('hidden');
         }
 
-        // --- Bubble Game ---
-        function initBubbleGame() {
-            // Generate objects for game
-            const rawArr = Array.from({length: 5}, () => Math.floor(Math.random() * 20) + 1);
-            
-            gameState = {
-                active: true,
-                type: 'bubble',
-                score: 0,
-                arr: rawArr.map((v, i) => ({ val: v, id: i })), // Objects
-                bubbleI: 0,
-                bubbleJ: 0,
-                sortedIndices: new Set(),
-                waitingForPass: false
-            };
-            switchMode('game-bubble');
-            document.getElementById('theory-content').innerHTML = `<strong>Bubble Sort Rule:</strong><br>Compare the two items in circles.<br>If Left > Right, they MUST swap.<br>Otherwise, keep them.`;
-            document.getElementById('game-instructions').innerText = "Look at the red circles. Choose the correct action below.";
-            renderBubbleGameStep();
+        // --- Helper Renderers ---
+        function renderBubbleStable(wrapper, arrObj, sortedSet, compareIndices) {
+             const neededIds = new Set(arrObj.map(x => x.id));
+             Array.from(wrapper.children).forEach(child => {
+                 if(child.dataset.id && !neededIds.has(parseInt(child.dataset.id))) wrapper.removeChild(child);
+             });
+             arrObj.forEach((item, index) => {
+                 let box = document.getElementById(`bubble-item-${item.id}`);
+                 if (!box) {
+                     box = document.createElement('div');
+                     box.id = `bubble-item-${item.id}`; box.dataset.id = item.id;
+                     box.className = "array-item absolute top-0 w-16 h-16 flex items-center justify-center text-2xl font-bold border-2 rounded-lg shadow-sm";
+                     box.style.left = "0px"; wrapper.appendChild(box);
+                 }
+                 box.style.transform = `translateX(${index * 80}px)`;
+                 box.innerText = item.val;
+                 let bg = sortedSet.has(index) ? 'bg-green-50' : 'bg-white';
+                 let border = sortedSet.has(index) ? 'border-green-400' : 'border-slate-300';
+                 let text = sortedSet.has(index) ? 'text-green-700' : 'text-slate-700';
+                 box.className = `array-item absolute top-0 w-16 h-16 flex items-center justify-center text-2xl font-bold border-2 rounded-lg shadow-sm ${bg} ${border} ${text}`;
+                 const hasCircle = compareIndices.includes(index);
+                 let circle = box.querySelector('.circle-highlight');
+                 if (hasCircle && !circle) {
+                     circle = document.createElement('div'); circle.className = 'circle-highlight'; box.appendChild(circle);
+                 } else if (!hasCircle && circle) box.removeChild(circle);
+             });
         }
 
+        // -- Bubble & Merge Games --
+        function initBubbleGame() { 
+             const rawArr = Array.from({length: 5}, () => Math.floor(Math.random() * 20) + 1);
+             gameState = { active: true, type: 'bubble', score: 0, arr: rawArr.map((v, i) => ({ val: v, id: i })), bubbleI: 0, bubbleJ: 0, sortedIndices: new Set(), waitingForPass: false };
+             switchMode('game-bubble');
+             document.getElementById('game-instructions').innerText = "Look at the red circles. Decide: Swap or Keep?";
+             renderBubbleGameStep();
+        }
         function renderBubbleGameStep() {
-            // Use Stable Renderer Logic (reused for game)
-            const area = document.getElementById('visualization-area');
-            
-            // Ensure wrapper exists
-            let wrapper = document.getElementById('bubble-wrapper');
-            if (!wrapper) {
-                area.innerHTML = '';
-                wrapper = document.createElement('div');
-                wrapper.id = 'bubble-wrapper';
-                wrapper.className = "bubble-container"; 
-                wrapper.style.width = `${gameState.arr.length * 80}px`; // 64px width + 16px gap
-                area.appendChild(wrapper);
-                
-                // Add Controls Container below
-                const controls = document.createElement('div');
-                controls.id = 'bubble-controls';
-                controls.className = "flex flex-col items-center gap-4 w-full mt-8";
-                area.appendChild(controls);
-            }
-
-            // Render Items
-            renderBubbleStable(wrapper, gameState.arr, gameState.sortedIndices, [gameState.bubbleJ, gameState.bubbleJ+1]);
-
-            // Pass Info
-            document.getElementById('pass-counter').classList.remove('hidden');
-            document.getElementById('pass-counter').innerText = `Pass: ${gameState.bubbleI + 1}`;
-
-            // Render Controls
-            const controls = document.getElementById('bubble-controls');
-            if (gameState.waitingForPass) {
-                 // PASS COMPLETE
-                document.getElementById('status-text').innerHTML = `<span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> Pass ${gameState.bubbleI + 1} Complete!</span> Item ${gameState.arr[gameState.arr.length - gameState.bubbleI - 1].val} is sorted.`;
-                controls.innerHTML = `
-                    <div class="text-center mb-2 text-slate-500">The largest unsorted number has bubbled to the top.</div>
-                    <button onclick="nextBubblePass()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform animate-pop">
-                        <i class="fas fa-arrow-right mr-2"></i> Start Next Pass
-                    </button>
-                `;
-            } else {
-                // COMPARE
-                const valA = gameState.arr[gameState.bubbleJ].val;
-                const valB = gameState.arr[gameState.bubbleJ+1].val;
-                document.getElementById('status-text').innerHTML = `Comparing items <strong>${valA}</strong> and <strong>${valB}</strong>`;
-                controls.innerHTML = `
-                    <div class="flex gap-4">
-                        <button onclick="checkBubbleAnswer(true)" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform">
-                            <i class="fas fa-exchange-alt mr-2"></i> SWAP
-                        </button>
-                        <button onclick="checkBubbleAnswer(false)" class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform">
-                            <i class="fas fa-check mr-2"></i> KEEP
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        function checkBubbleAnswer(userSaidSwap) {
-            const val1 = gameState.arr[gameState.bubbleJ].val;
-            const val2 = gameState.arr[gameState.bubbleJ + 1].val;
-            const shouldSwap = val1 > val2;
-
-            if (userSaidSwap === shouldSwap) {
-                // Correct
-                handleCorrect();
-                if (shouldSwap) {
-                    // Swap Objects in Array
-                    let temp = gameState.arr[gameState.bubbleJ];
-                    gameState.arr[gameState.bubbleJ] = gameState.arr[gameState.bubbleJ+1];
-                    gameState.arr[gameState.bubbleJ+1] = temp;
-                }
-                
-                // Logic Flow
-                if (gameState.bubbleJ >= gameState.arr.length - gameState.bubbleI - 2) {
-                    gameState.sortedIndices.add(gameState.arr.length - gameState.bubbleI - 1);
-                    gameState.waitingForPass = true;
-                } else {
-                    gameState.bubbleJ++;
-                }
-                renderBubbleGameStep(); // Re-render triggers CSS animation because IDs moved
-
-            } else {
-                handleWrong();
-            }
-        }
-
-        function nextBubblePass() {
-            gameState.bubbleI++;
-            gameState.bubbleJ = 0;
-            gameState.waitingForPass = false;
-            
-            if (gameState.bubbleI >= gameState.arr.length - 1) {
-                gameState.sortedIndices.add(0);
-                gameWin();
-            } else {
-                renderBubbleGameStep();
-            }
-        }
-
-        // --- Merge Game (Full Stages) ---
-        function initMergeGame() {
-            // Generate 8 items for a nice 3-stage game
-            const arr = Array.from({length: 8}, () => Math.floor(Math.random() * 20) + 1);
-            
-            gameState = {
-                active: true,
-                type: 'merge',
-                score: 0,
-                mergeGamePhase: 'splitting', // Start with splitting phase
-                // We start with one big array
-                mergeSubArrays: [arr], 
-                nextSubArrays: [],
-                mergePairIdx: 0, 
-                
-                mergeLeft: [],
-                mergeRight: [],
-                mergeResult: [],
-                
-                stage: 1, 
-                maxStages: 3 
-            };
-            switchMode('game-merge');
-            
-            // Show Progress
-            document.getElementById('game-progress').classList.remove('hidden');
-            document.getElementById('game-level-text').innerText = `Phase: Splitting`;
-            document.getElementById('game-progress-bar').style.width = `10%`;
-            document.getElementById('pass-counter').classList.remove('hidden');
-            document.getElementById('pass-counter').innerText = `Divide`;
-            
-            document.getElementById('theory-content').innerHTML = `<strong>Divide and Conquer:</strong><br>First, <strong>Split</strong> the list until you have single items.<br>Then, <strong>Merge</strong> them back in sorted order.`;
-            
-            renderMergeGameStep();
-        }
-        
-        function renderMergeGameStep() {
-             if (gameState.mergeGamePhase === 'splitting') {
-                 renderSplittingStep();
+             const area = document.getElementById('visualization-area');
+             let wrapper = document.getElementById('bubble-wrapper');
+             if (!wrapper) { area.innerHTML = ''; wrapper = document.createElement('div'); wrapper.id = 'bubble-wrapper'; wrapper.className = "bubble-container"; wrapper.style.width = `${gameState.arr.length * 80}px`; area.appendChild(wrapper); 
+                const ctrl = document.createElement('div'); ctrl.id = 'bubble-controls'; ctrl.className = "flex flex-col items-center gap-4 w-full mt-8"; area.appendChild(ctrl);
+             }
+             renderBubbleStable(wrapper, gameState.arr, gameState.sortedIndices, [gameState.bubbleJ, gameState.bubbleJ+1]);
+             document.getElementById('pass-counter').classList.remove('hidden'); document.getElementById('pass-counter').innerText = `Pass: ${gameState.bubbleI + 1}`;
+             const controls = document.getElementById('bubble-controls');
+             if (gameState.waitingForPass) {
+                document.getElementById('status-text').innerHTML = `<span class="text-green-600 font-bold">Pass Complete!</span> Item ${gameState.arr[gameState.arr.length - gameState.bubbleI - 1].val} is sorted.`;
+                controls.innerHTML = `<button onclick="nextBubblePass()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg">Start Next Pass</button>`;
              } else {
-                 renderMergingStep();
+                const vA = gameState.arr[gameState.bubbleJ].val, vB = gameState.arr[gameState.bubbleJ+1].val;
+                document.getElementById('status-text').innerHTML = `Comparing <strong>${vA}</strong> and <strong>${vB}</strong>`;
+                controls.innerHTML = `<div class="flex gap-4"><button onclick="checkBubbleAnswer(true)" class="bg-red-500 text-white px-8 py-3 rounded-xl font-bold">SWAP</button><button onclick="checkBubbleAnswer(false)" class="bg-green-500 text-white px-8 py-3 rounded-xl font-bold">KEEP</button></div>`;
              }
         }
+        function checkBubbleAnswer(swap) {
+             const v1 = gameState.arr[gameState.bubbleJ].val, v2 = gameState.arr[gameState.bubbleJ+1].val;
+             if (swap === (v1 > v2)) {
+                 handleCorrect();
+                 if(swap) { let t = gameState.arr[gameState.bubbleJ]; gameState.arr[gameState.bubbleJ]=gameState.arr[gameState.bubbleJ+1]; gameState.arr[gameState.bubbleJ+1]=t; }
+                 if (gameState.bubbleJ >= gameState.arr.length - gameState.bubbleI - 2) { gameState.sortedIndices.add(gameState.arr.length - gameState.bubbleI - 1); gameState.waitingForPass = true; } else { gameState.bubbleJ++; }
+                 renderBubbleGameStep();
+             } else handleWrong();
+        }
+        function nextBubblePass() { gameState.bubbleI++; gameState.bubbleJ = 0; gameState.waitingForPass = false; if (gameState.bubbleI >= gameState.arr.length - 1) { gameWin(); } else { renderBubbleGameStep(); } }
 
+        function initMergeGame() {
+             const arr = Array.from({length: 8}, () => Math.floor(Math.random() * 20) + 1);
+             gameState = { active: true, type: 'merge', score: 0, mergeGamePhase: 'splitting', mergeSubArrays: [arr], nextSubArrays: [], mergePairIdx: 0, mergeLeft: [], mergeRight: [], mergeResult: [], stage: 1, maxStages: 3 };
+             switchMode('game-merge'); renderMergeGameStep();
+        }
+        function renderMergeGameStep() { 
+             if(gameState.mergeGamePhase==='splitting') renderSplittingStep(); else renderMergingStep(); 
+             document.getElementById('pass-counter').classList.remove('hidden'); document.getElementById('pass-counter').innerText = gameState.mergeGamePhase==='splitting'?'Divide':`Stage: ${gameState.stage}`;
+        }
         function renderSplittingStep() {
-            const area = document.getElementById('visualization-area');
-            area.innerHTML = '';
-            
-            const container = document.createElement('div');
-            container.className = "flex flex-col items-center gap-6 mt-10 w-full";
-            
-            document.getElementById('status-text').innerText = "Click on any group to split it in half.";
-            document.getElementById('game-instructions').innerText = "Keep splitting until you have only single numbers.";
-
-            const rowDiv = document.createElement('div');
-            rowDiv.className = "flex flex-wrap gap-4 justify-center items-start";
-            
-            gameState.mergeSubArrays.forEach((group, idx) => {
-               const groupDiv = document.createElement('div');
-               // Style changes if splittable
-               const isSplittable = group.length > 1;
-               const cursorClass = isSplittable ? "split-hover bg-white border-blue-400 shadow-sm" : "bg-slate-50 border-slate-200 opacity-80";
-               
-               groupDiv.className = `flex gap-1 p-3 border-2 rounded-lg transition-all ${cursorClass}`;
-               
-               if (isSplittable) {
-                   groupDiv.onclick = () => splitGroup(idx);
-                   groupDiv.title = "Click to split";
-               }
-
-               group.forEach(val => {
-                   const box = document.createElement('div');
-                   box.className = "w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-800 border border-blue-100 rounded font-bold text-lg";
-                   box.innerText = val;
-                   groupDiv.appendChild(box);
-               });
-               
-               if (isSplittable) {
-                   const icon = document.createElement('div');
-                   icon.className = "absolute -top-3 -right-2 bg-white rounded-full p-1 shadow border border-slate-200 text-xs text-blue-500 hidden"; 
-                   icon.innerHTML = '<i class="fas fa-cut"></i>';
-                   groupDiv.appendChild(icon);
-               }
-               
-               rowDiv.appendChild(groupDiv);
+            const area = document.getElementById('visualization-area'); area.innerHTML = '';
+            const rowDiv = document.createElement('div'); rowDiv.className = "flex flex-wrap gap-4 justify-center items-start mt-10";
+            document.getElementById('status-text').innerText = "Click groups to split them.";
+            gameState.mergeSubArrays.forEach((g,i)=>{
+               const div = document.createElement('div'); div.className = "flex gap-1 p-2 border-2 rounded-lg cursor-pointer hover:border-blue-500 bg-white";
+               if(g.length<=1) div.className="flex gap-1 p-2 border rounded-lg opacity-50";
+               else div.onclick=()=>splitGroup(i);
+               g.forEach(v=>{ const b=document.createElement('div'); b.className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-800 border rounded font-bold"; b.innerText=v; div.appendChild(b); });
+               rowDiv.appendChild(div);
             });
-            container.appendChild(rowDiv);
-            area.appendChild(container);
+            area.appendChild(rowDiv);
         }
-
-        function splitGroup(idx) {
-            const group = gameState.mergeSubArrays[idx];
-            if (group.length <= 1) return;
-            
-            const mid = Math.floor(group.length / 2);
-            const left = group.slice(0, mid);
-            const right = group.slice(mid);
-            
-            gameState.mergeSubArrays.splice(idx, 1, left, right);
-            
-            handleCorrect(); 
-            
-            const allSplit = gameState.mergeSubArrays.every(g => g.length === 1);
-            if (allSplit) {
-                setTimeout(() => {
-                   gameState.mergeGamePhase = 'merging';
-                   gameState.stage = 1;
-                   updateMergeProgress();
-                   loadNextMergePair();
-                }, 800);
-            } else {
-                renderSplittingStep();
-            }
+        function splitGroup(i) {
+             const g=gameState.mergeSubArrays[i]; if(g.length<=1)return;
+             const m=Math.floor(g.length/2); gameState.mergeSubArrays.splice(i,1,g.slice(0,m),g.slice(m));
+             handleCorrect();
+             if(gameState.mergeSubArrays.every(x=>x.length===1)) { gameState.mergeGamePhase='merging'; setTimeout(loadNextMergePair,500); } else renderSplittingStep();
         }
-
-        function updateMergeProgress() {
-            document.getElementById('game-level-text').innerText = `Merge Stage ${gameState.stage}/${gameState.maxStages}`;
-            document.getElementById('game-progress-bar').style.width = `${((gameState.stage)/gameState.maxStages)*100}%`;
-            document.getElementById('pass-counter').innerText = `Stage: ${gameState.stage}`;
-        }
-
         function loadNextMergePair() {
-            if (gameState.mergePairIdx >= gameState.mergeSubArrays.length) {
-                renderMergeStageComplete();
-                return;
-            }
-
-            gameState.mergeLeft = [...gameState.mergeSubArrays[gameState.mergePairIdx]];
-            if (gameState.mergePairIdx + 1 >= gameState.mergeSubArrays.length) {
-                gameState.nextSubArrays.push(gameState.mergeLeft);
-                renderMergeStageComplete();
-                return;
-            }
-
-            gameState.mergeRight = [...gameState.mergeSubArrays[gameState.mergePairIdx + 1]];
-            gameState.mergeResult = [];
-            
-            document.getElementById('game-instructions').innerText = `Stage ${gameState.stage}: Merge the next pair.`;
-            renderMergeGameStep();
+             if (gameState.mergePairIdx >= gameState.mergeSubArrays.length) { renderMergeStageComplete(); return; }
+             gameState.mergeLeft = [...gameState.mergeSubArrays[gameState.mergePairIdx]];
+             if (gameState.mergePairIdx + 1 >= gameState.mergeSubArrays.length) { gameState.nextSubArrays.push(gameState.mergeLeft); renderMergeStageComplete(); return; }
+             gameState.mergeRight = [...gameState.mergeSubArrays[gameState.mergePairIdx+1]]; gameState.mergeResult=[]; renderMergingStep();
         }
-
+        
         function renderMergingStep() {
-            const area = document.getElementById('visualization-area');
-            area.innerHTML = '';
-            
-            const container = document.createElement('div');
-            container.className = "flex flex-col items-center gap-8 w-full max-w-4xl mt-4"; 
+            const area = document.getElementById('visualization-area'); area.innerHTML='';
+            const container = document.createElement('div'); container.className="flex flex-col items-center gap-6 mt-4 max-w-4xl w-full"; // increased width
 
-            // --- Context Row ---
+            // 1. Context Row (Inputs for this Stage)
             const contextDiv = document.createElement('div');
             contextDiv.className = "flex flex-col items-center w-full bg-slate-50 rounded-xl border border-slate-200 p-4 shadow-sm";
-            
             const contextLabel = document.createElement('div');
             contextLabel.className = "text-xs font-bold text-slate-400 uppercase tracking-widest mb-3";
             contextLabel.innerText = `Current List Status (Stage ${gameState.stage})`;
@@ -782,247 +734,293 @@
             contextDiv.appendChild(groupsRow);
             container.appendChild(contextDiv);
 
-            // --- Interactive Area ---
-            const sourcesDiv = document.createElement('div');
-            sourcesDiv.className = "flex gap-8 justify-center w-full mt-4";
-            
-            const leftGroup = createMergeGroup(gameState.mergeLeft, 'bg-blue-100 border-blue-400', 0);
-            const rightGroup = createMergeGroup(gameState.mergeRight, 'bg-orange-100 border-orange-400', 1);
-            
-            sourcesDiv.appendChild(leftGroup);
-            sourcesDiv.appendChild(rightGroup);
+            // 2. Completed Output Row (What we've built so far in this stage)
+            if (gameState.nextSubArrays.length > 0) {
+                const completedDiv = document.createElement('div');
+                completedDiv.className = "flex flex-col items-center w-full bg-green-50 rounded-xl border border-green-200 p-3 shadow-sm";
+                const completedLabel = document.createElement('div');
+                completedLabel.className = "text-xs font-bold text-green-600 uppercase tracking-widest mb-2";
+                completedLabel.innerText = "Completed Groups (This Stage)";
+                completedDiv.appendChild(completedLabel);
+                
+                const compRow = document.createElement('div');
+                compRow.className = "flex flex-wrap justify-center gap-4";
+                
+                gameState.nextSubArrays.forEach(group => {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = "flex gap-1 p-1.5 border border-green-300 bg-white rounded-lg";
+                    group.forEach(val => {
+                        const block = document.createElement('div');
+                        block.className = "w-6 h-6 flex items-center justify-center bg-green-100 text-green-800 rounded text-xs font-bold";
+                        block.innerText = val;
+                        groupDiv.appendChild(block);
+                    });
+                    compRow.appendChild(groupDiv);
+                });
+                completedDiv.appendChild(compRow);
+                container.appendChild(completedDiv);
+            }
 
-            const arrow = document.createElement('div');
-            arrow.innerHTML = `<i class="fas fa-arrow-down text-3xl text-slate-300"></i>`;
+            // 3. Interactive Area
+            const srcDiv = document.createElement('div'); srcDiv.className="flex gap-8 mt-4";
+            srcDiv.appendChild(createMergeGroup(gameState.mergeLeft,'bg-blue-100 border-blue-400',0)); srcDiv.appendChild(createMergeGroup(gameState.mergeRight,'bg-orange-100 border-orange-400',1));
             
-            const resultDiv = document.createElement('div');
-            resultDiv.className = "bg-slate-100 border-2 border-slate-300 border-dashed rounded-xl p-4 min-h-[5rem] w-full flex gap-2 justify-center items-center shadow-inner flex-wrap";
-            
-            gameState.mergeResult.forEach(val => {
-                const box = document.createElement('div');
-                box.className = "w-10 h-10 flex items-center justify-center bg-slate-800 text-white rounded font-bold animate-pop";
-                box.innerText = val;
-                resultDiv.appendChild(box);
-            });
+            const arrow = document.createElement('div'); arrow.innerHTML = `<i class="fas fa-arrow-down text-3xl text-slate-300"></i>`;
 
-            container.appendChild(sourcesDiv);
+            const resDiv = document.createElement('div'); resDiv.className="bg-slate-100 border-2 border-dashed rounded-xl p-4 min-h-[5rem] w-full flex gap-2 justify-center items-center shadow-inner flex-wrap";
+            gameState.mergeResult.forEach(v=>{ const b=document.createElement('div'); b.className="w-10 h-10 flex items-center justify-center bg-slate-800 text-white rounded font-bold animate-pop"; b.innerText=v; resDiv.appendChild(b); });
+            
+            container.appendChild(srcDiv); 
             container.appendChild(arrow);
-            container.appendChild(resultDiv);
+            container.appendChild(resDiv); 
             area.appendChild(container);
-
-            document.getElementById('status-text').innerHTML = "Select the next smallest number.";
+            document.getElementById('status-text').innerText = "Select smaller number.";
         }
 
-        function renderMergeStageComplete() {
-            const area = document.getElementById('visualization-area');
-            area.innerHTML = '';
-            
-            document.getElementById('status-text').innerHTML = `<span class="text-green-600 font-bold">Stage ${gameState.stage} Complete!</span>`;
-            
-            const container = document.createElement('div');
-            container.className = "flex flex-col items-center gap-6 mt-10 w-full";
-            
-            const msg = document.createElement('div');
-            msg.className = "text-slate-500 mb-2";
-            msg.innerText = "Here is the result of this stage. The groups are getting larger.";
-            container.appendChild(msg);
-
-            const rowDiv = document.createElement('div');
-            rowDiv.className = "flex flex-wrap gap-4 justify-center";
-            
-            gameState.nextSubArrays.forEach(group => {
-               const groupDiv = document.createElement('div');
-               groupDiv.className = "flex gap-1 p-2 bg-indigo-50 border border-indigo-200 rounded-lg";
-               group.forEach(val => {
-                   const box = document.createElement('div');
-                   box.className = "w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded font-bold text-sm";
-                   box.innerText = val;
-                   groupDiv.appendChild(box);
-               });
-               rowDiv.appendChild(groupDiv);
-            });
-            container.appendChild(rowDiv);
-
-            const btn = document.createElement('button');
-            if (gameState.nextSubArrays.length > 1) {
-                btn.className = "bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform animate-pop mt-4";
-                btn.innerHTML = `<i class="fas fa-layer-group mr-2"></i> Start Stage ${gameState.stage + 1}`;
-                btn.onclick = nextMergeStage;
-            } else {
-                btn.className = "bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform animate-pop mt-4";
-                btn.innerHTML = `<i class="fas fa-trophy mr-2"></i> Finish`;
-                btn.onclick = gameWin;
-            }
-            
-            container.appendChild(btn);
-            area.appendChild(container);
-        }
-
-        function nextMergeStage() {
-            gameState.mergeSubArrays = gameState.nextSubArrays;
-            gameState.nextSubArrays = [];
-            gameState.mergePairIdx = 0;
-            gameState.stage++;
-            updateMergeProgress();
-            loadNextMergePair();
-        }
-
-        function createMergeGroup(arr, colorClass, sideId) {
-            const div = document.createElement('div');
-            div.className = `p-3 rounded-lg border-2 flex gap-2 min-h-[4rem] min-w-[150px] justify-center items-center ${colorClass}`;
-            
-            if(arr.length === 0) {
-                div.innerHTML = `<span class="text-xs text-slate-400 italic">Empty</span>`;
-                div.classList.add('opacity-50');
-            }
-
-            arr.forEach((val, idx) => {
-                const item = document.createElement('div');
-                const isClickable = idx === 0;
-                const cursor = isClickable ? "cursor-pointer hover:scale-110 hover:shadow-md" : "opacity-60";
-                
-                item.className = `w-10 h-10 bg-white border border-slate-200 rounded flex items-center justify-center font-bold text-slate-700 transition-all ${cursor}`;
-                item.innerText = val;
-                
-                if (isClickable) {
-                    item.onclick = () => checkMergeAnswer(sideId);
-                }
-                div.appendChild(item);
-            });
-            return div;
+        function createMergeGroup(arr,cls,id){
+             const d=document.createElement('div'); d.className=`p-3 border-2 rounded-lg flex gap-2 min-h-[4rem] min-w-[150px] justify-center items-center ${cls}`;
+             if(arr.length===0) { d.innerHTML = `<span class="text-xs text-slate-400 italic">Empty</span>`; d.classList.add('opacity-50'); }
+             arr.forEach((v,i)=>{ const b=document.createElement('div'); b.className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded font-bold text-slate-700 transition-all cursor-pointer hover:scale-110 shadow-sm"; b.innerText=v; if(i===0) b.onclick=()=>checkMergeAnswer(id); else { b.classList.add('opacity-60'); b.classList.remove('cursor-pointer', 'hover:scale-110'); } d.appendChild(b); });
+             return d;
         }
 
         function checkMergeAnswer(sideId) {
-            const leftVal = gameState.mergeLeft.length > 0 ? gameState.mergeLeft[0] : Infinity;
-            const rightVal = gameState.mergeRight.length > 0 ? gameState.mergeRight[0] : Infinity;
-            
-            let correctSide = -1;
-            if (leftVal < rightVal) correctSide = 0;
-            else correctSide = 1;
+             const leftVal = gameState.mergeLeft.length > 0 ? gameState.mergeLeft[0] : Infinity;
+             const rightVal = gameState.mergeRight.length > 0 ? gameState.mergeRight[0] : Infinity;
+             
+             let isCorrect = false;
+             // Allow equality: if values are the same, allow user to pick either
+             if (leftVal === rightVal) {
+                 isCorrect = true;
+             } else {
+                 if (sideId === 0 && leftVal < rightVal) isCorrect = true;
+                 if (sideId === 1 && rightVal < leftVal) isCorrect = true;
+             }
 
-            if (sideId === correctSide) {
-                handleCorrect();
-                if (sideId === 0) {
-                    gameState.mergeResult.push(gameState.mergeLeft.shift());
-                } else {
-                    gameState.mergeResult.push(gameState.mergeRight.shift());
+             if (isCorrect) {
+                 handleCorrect();
+                 if (sideId === 0) gameState.mergeResult.push(gameState.mergeLeft.shift());
+                 else gameState.mergeResult.push(gameState.mergeRight.shift());
+                 
+                 if (!gameState.mergeLeft.length && !gameState.mergeRight.length) { 
+                     gameState.nextSubArrays.push(gameState.mergeResult); 
+                     gameState.mergePairIdx += 2; 
+                     setTimeout(loadNextMergePair, 300); 
+                 } else {
+                     renderMergingStep();
+                 }
+             } else handleWrong();
+        }
+
+        function renderMergeStageComplete() {
+             gameState.mergeSubArrays=gameState.nextSubArrays; gameState.nextSubArrays=[]; gameState.mergePairIdx=0; gameState.stage++;
+             if(gameState.stage>gameState.maxStages) gameWin(); else loadNextMergePair();
+        }
+
+        // --- NEW GAMES: Linear & Binary ---
+
+        function initLinearGame() {
+            const arr = Array.from({length: 8}, () => Math.floor(Math.random() * 20) + 1);
+            const target = arr[Math.floor(Math.random() * arr.length)]; // Guarantee found for game fun
+            gameState = { active: true, type: 'linear', score: 0, arr: arr, target: target, linearIdx: 0 };
+            switchMode('game-linear');
+            document.getElementById('game-instructions').innerText = `Find the number ${target}. Click items in order from the start.`;
+            renderLinearGameStep();
+        }
+
+        function renderLinearGameStep() {
+            const area = document.getElementById('visualization-area');
+            area.innerHTML = '';
+            
+            document.getElementById('status-text').innerHTML = `Find Target: <strong>${gameState.target}</strong>`;
+
+            const grid = document.createElement('div');
+            grid.className = "flex flex-wrap gap-2 justify-center mt-10";
+
+            gameState.arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                let style = "bg-white border-slate-300 text-slate-700 cursor-pointer hover:border-blue-500 hover:shadow-md";
+                
+                if (idx < gameState.linearIdx) {
+                    style = "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"; // Checked
                 }
                 
-                if (gameState.mergeLeft.length === 0 && gameState.mergeRight.length === 0) {
-                    gameState.nextSubArrays.push(gameState.mergeResult);
-                    gameState.mergePairIdx += 2;
-                    setTimeout(loadNextMergePair, 300);
+                box.className = `w-12 h-12 flex items-center justify-center border-2 rounded-lg font-bold text-lg transition-all ${style}`;
+                box.innerText = val;
+                
+                if (idx >= gameState.linearIdx) {
+                    box.onclick = () => checkLinearClick(idx);
+                }
+                grid.appendChild(box);
+            });
+            area.appendChild(grid);
+        }
+
+        function checkLinearClick(idx) {
+            // Linear search implies order. User MUST click current gameState.linearIdx
+            if (idx === gameState.linearIdx) {
+                // Check if this is the target
+                if (gameState.arr[idx] === gameState.target) {
+                    handleCorrect();
+                    gameWin();
                 } else {
-                    renderMergeGameStep();
+                    // Not target, but correct step (checking next item)
+                    handleCorrect();
+                    gameState.linearIdx++;
+                    renderLinearGameStep();
                 }
             } else {
+                // Clicked out of order
                 handleWrong();
+                alert("Linear search checks items in order. Click the first unchecked item.");
             }
         }
 
-        // --- Common Game Utilities ---
+        function initBinaryGame() {
+            const arr = Array.from({length: 9}, () => Math.floor(Math.random() * 50) + 1);
+            arr.sort((a,b) => a-b);
+            const target = arr[Math.floor(Math.random() * arr.length)];
+            
+            gameState = { 
+                active: true, type: 'binary', score: 0, arr: arr, target: target,
+                binaryLow: 0, binaryHigh: arr.length - 1
+            };
+            switchMode('game-binary');
+            document.getElementById('game-instructions').innerText = `Find ${target}. Select the MIDDLE item of the active range.`;
+            renderBinaryGameStep();
+        }
+
+        function renderBinaryGameStep() {
+            const area = document.getElementById('visualization-area');
+            area.innerHTML = '';
+            
+            document.getElementById('status-text').innerHTML = `Find Target: <strong>${gameState.target}</strong>`;
+            
+            // Calculate correct mid for validation
+            gameState.binaryMid = Math.floor((gameState.binaryLow + gameState.binaryHigh) / 2);
+
+            const grid = document.createElement('div');
+            grid.className = "flex flex-wrap gap-2 justify-center mt-10 relative"; // relative for arrows
+
+            gameState.arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                let style = "bg-white border-slate-300 text-slate-700";
+                
+                // Active Range visual logic
+                if (idx < gameState.binaryLow || idx > gameState.binaryHigh) {
+                    style = "bg-slate-100 border-slate-200 text-slate-300 opacity-50"; // Ignored
+                } else {
+                    style += " cursor-pointer hover:border-purple-500 hover:shadow-lg hover:-translate-y-1"; // Active
+                }
+
+                box.className = `w-12 h-12 flex items-center justify-center border-2 rounded-lg font-bold text-lg transition-all relative ${style}`;
+                box.innerText = val;
+                
+                // Only allow clicking in active range
+                if (idx >= gameState.binaryLow && idx <= gameState.binaryHigh) {
+                    box.onclick = () => checkBinaryClick(idx);
+                }
+                
+                // Add L / H markers
+                if (idx === gameState.binaryLow) {
+                    const l = document.createElement('div');
+                    l.className = "marker-arrow text-green-600";
+                    l.innerHTML = `Low`;
+                    box.appendChild(l);
+                }
+                if (idx === gameState.binaryHigh) {
+                    const h = document.createElement('div');
+                    h.className = "marker-arrow text-red-600";
+                    h.innerHTML = `High`;
+                    box.appendChild(h);
+                }
+
+                grid.appendChild(box);
+            });
+            area.appendChild(grid);
+        }
+
+        function checkBinaryClick(idx) {
+            // User must click the Middle
+            if (idx === gameState.binaryMid) {
+                handleCorrect();
+                const val = gameState.arr[idx];
+                
+                if (val === gameState.target) {
+                    gameWin();
+                } else if (val < gameState.target) {
+                    gameState.binaryLow = idx + 1;
+                    renderBinaryGameStep();
+                } else {
+                    gameState.binaryHigh = idx - 1;
+                    renderBinaryGameStep();
+                }
+            } else {
+                handleWrong();
+                // Visual feedback
+                alert(`In Binary Search, you must check the MIDDLE item (index ${gameState.binaryMid}).`);
+            }
+        }
+
+        // --- Common Utils ---
         function handleCorrect() {
             gameState.score += 10;
-            document.getElementById('game-score').innerText = gameState.score;
-            document.getElementById('game-score').classList.remove('text-purple-800');
-            document.getElementById('game-score').classList.add('text-green-600', 'animate-pop');
-            setTimeout(() => {
-                document.getElementById('game-score').classList.remove('text-green-600', 'animate-pop');
-                document.getElementById('game-score').classList.add('text-purple-800');
-            }, 300);
+            const scoreEl = document.getElementById('game-score');
+            scoreEl.innerText = gameState.score;
+            scoreEl.classList.add('text-green-500', 'animate-pop');
+            setTimeout(() => scoreEl.classList.remove('text-green-500', 'animate-pop'), 300);
         }
-
         function handleWrong() {
-            const panel = document.getElementById('visualization-area').firstElementChild;
-            panel.classList.add('animate-shake');
-            setTimeout(() => panel.classList.remove('animate-shake'), 300);
-            
             gameState.score = Math.max(0, gameState.score - 5);
             document.getElementById('game-score').innerText = gameState.score;
+            const panel = document.getElementById('visualization-area');
+            panel.classList.add('animate-shake');
+            setTimeout(() => panel.classList.remove('animate-shake'), 300);
         }
-
         function gameWin() {
             const area = document.getElementById('visualization-area');
             area.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full animate-pop mt-10">
-                    <i class="fas fa-trophy text-yellow-400 text-6xl mb-4 drop-shadow-md"></i>
-                    <h2 class="text-3xl font-black text-slate-800 mb-2">Excellent Work!</h2>
-                    <p class="text-slate-500 mb-6">You completed all challenges.</p>
-                    <div class="bg-purple-100 text-purple-800 px-6 py-3 rounded-xl font-bold text-2xl mb-8">
-                        Final Score: ${gameState.score}
-                    </div>
-                    <button onclick="renderGameMenu()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700">
-                        Play Again
-                    </button>
+                <div class="flex flex-col items-center justify-center mt-10 animate-pop">
+                    <i class="fas fa-trophy text-yellow-400 text-6xl mb-4"></i>
+                    <h2 class="text-3xl font-bold text-slate-800">Success!</h2>
+                    <p class="text-slate-500 mb-4">Target found.</p>
+                    <div class="bg-purple-100 text-purple-800 px-6 py-2 rounded-lg font-bold text-xl">Score: ${gameState.score}</div>
+                    <button onclick="renderGameMenu()" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded font-bold">Menu</button>
                 </div>
             `;
-            document.getElementById('status-text').innerText = "Challenge Complete";
-            document.getElementById('pass-counter').classList.add('hidden');
+            document.getElementById('status-text').innerText = "Complete";
         }
 
-        // --- Standard Simulation Renderers ---
-
-        // Helper: Render Bubble Sort with Stable DOM (reused by sim and game)
-        function renderBubbleStable(wrapper, arrObj, sortedSet, compareIndices) {
-             // 1. Sync DOM Items
-             // Identify needed IDs
-             const neededIds = new Set(arrObj.map(x => x.id));
-             
-             // Remove extra items (if any, typically none for sorting)
-             Array.from(wrapper.children).forEach(child => {
-                 if(child.dataset.id && !neededIds.has(parseInt(child.dataset.id))) {
-                     wrapper.removeChild(child);
-                 }
-             });
-
-             // Create/Update items
-             arrObj.forEach((item, index) => {
-                 let box = document.getElementById(`bubble-item-${item.id}`);
-                 if (!box) {
-                     box = document.createElement('div');
-                     box.id = `bubble-item-${item.id}`;
-                     box.dataset.id = item.id;
-                     box.className = "array-item absolute top-0 w-16 h-16 flex items-center justify-center text-2xl font-bold border-2 rounded-lg shadow-sm";
-                     // Set initial styles
-                     box.style.left = "0px"; // We use transform for moving
-                     wrapper.appendChild(box);
-                 }
-
-                 // Update Visual State
-                 // Position
-                 box.style.transform = `translateX(${index * 80}px)`; // 64width + 16gap = 80px stride
-                 
-                 // Content
-                 box.innerText = item.val;
-
-                 // Colors
-                 let bg = 'bg-white';
-                 let border = 'border-slate-300';
-                 let text = 'text-slate-700';
-
-                 if (sortedSet.has(index)) {
-                     bg = 'bg-green-50';
-                     border = 'border-green-400';
-                     text = 'text-green-700';
-                 }
-                 
-                 box.className = `array-item absolute top-0 w-16 h-16 flex items-center justify-center text-2xl font-bold border-2 rounded-lg shadow-sm ${bg} ${border} ${text}`;
-                 
-                 // Circles
-                 // We clear old circles inside box and re-add if needed
-                 // A better way is to check compareIndices
-                 // Since we reuse boxes, we need to manage the circle child explicitly
-                 const hasCircle = compareIndices.includes(index);
-                 let circle = box.querySelector('.circle-highlight');
-                 
-                 if (hasCircle && !circle) {
-                     circle = document.createElement('div');
-                     circle.className = 'circle-highlight';
-                     box.appendChild(circle);
-                 } else if (!hasCircle && circle) {
-                     box.removeChild(circle);
-                 }
-             });
+        // --- Simulation Rendering ---
+        function startSim() {
+            const arr = getInputArray();
+            if (arr.length === 0) return alert("Enter numbers");
+            
+            // Handle binary search sort requirement
+            if (currentMode === 'binary') {
+                const sorted = [...arr].sort((a,b)=>a-b);
+                // If input wasn't sorted, update UI
+                if(JSON.stringify(sorted) !== JSON.stringify(arr)) {
+                    document.getElementById('dataInput').value = sorted.join(', ');
+                }
+                const target = parseInt(document.getElementById('targetInput').value) || 0;
+                animationFrames = generateBinaryFrames(sorted, target);
+            } 
+            else if (currentMode === 'linear') {
+                const target = parseInt(document.getElementById('targetInput').value) || 0;
+                animationFrames = generateLinearFrames(arr, target);
+            }
+            else if (currentMode === 'bubble') {
+                animationFrames = generateBubbleFrames(arr);
+            } else {
+                animationFrames = generateMergeFrames(arr);
+            }
+            
+            currentFrameIndex = 0;
+            isPlaying = true;
+            document.getElementById('btn-start').innerHTML = '<i class="fas fa-redo mr-1"></i> Restart';
+            renderFrame();
+            playLoop();
         }
 
         function renderFrame() {
@@ -1030,34 +1028,27 @@
             if (currentFrameIndex < 0 || currentFrameIndex >= animationFrames.length) return;
             const frame = animationFrames[currentFrameIndex];
             
-            document.getElementById('step-counter').innerText = `Step: ${currentFrameIndex + 1} / ${animationFrames.length}`;
+            document.getElementById('step-counter').innerText = `Step: ${currentFrameIndex + 1}`;
             document.getElementById('status-text').innerHTML = frame.msg;
 
             const container = document.getElementById('visualization-area');
-            
             document.getElementById('btn-prev').disabled = currentFrameIndex === 0;
             document.getElementById('btn-next').disabled = currentFrameIndex === animationFrames.length - 1;
 
-            if (frame.type === 'bubble') {
-                renderBubble(frame, container);
-            }
-            else if (frame.type === 'merge-tree') {
-                container.innerHTML = ''; // Merge tree doesn't use stable DOM (it's row based)
-                renderMergeTree(frame, container);
-            }
-
+            if (frame.type === 'linear') renderLinearSim(frame, container);
+            else if (frame.type === 'binary') renderBinarySim(frame, container);
+            else if (frame.type === 'bubble') renderBubble(frame, container);
+            else if (frame.type === 'merge-tree') { container.innerHTML=''; renderMergeTree(frame, container); }
+            
             // Pass Badge
             const passBadge = document.getElementById('pass-counter');
             if (frame.pass && frame.pass !== 0) {
                 passBadge.classList.remove('hidden');
-                passBadge.innerText = (typeof frame.pass === 'number') ? "Pass: " + frame.pass : (frame.pass === 'End' ? "Sorted" : frame.pass);
-            } else {
-                passBadge.classList.add('hidden');
-            }
+                passBadge.innerText = (typeof frame.pass === 'number') ? "Pass: " + frame.pass : frame.pass;
+            } else passBadge.classList.add('hidden');
         }
 
         function renderBubble(frame, container) {
-            // Ensure wrapper exists
             let wrapper = document.getElementById('bubble-wrapper');
             if (!wrapper) {
                 container.innerHTML = '';
@@ -1067,24 +1058,7 @@
                 wrapper.style.width = `${frame.arr.length * 80}px`;
                 container.appendChild(wrapper);
             }
-            
-            // Pass the compare indices explicitly
             renderBubbleStable(wrapper, frame.arr, frame.sorted, frame.compare);
-            
-            // Pass Info overlay (if needed)
-            // Currently handled by Pass Badge in UI, but if we want the big background text:
-            let bgText = document.getElementById('bg-pass-text');
-            if (frame.pass && frame.pass !== "End" && frame.pass !== 0) {
-                 if(!bgText) {
-                     bgText = document.createElement('div');
-                     bgText.id = 'bg-pass-text';
-                     bgText.className = "absolute top-4 left-4 font-bold text-blue-200 text-5xl opacity-20 pointer-events-none";
-                     container.appendChild(bgText);
-                 }
-                 bgText.innerText = "PASS " + frame.pass;
-            } else if (bgText) {
-                bgText.remove();
-            }
         }
 
         function renderMergeTree(frame, container) {
@@ -1113,28 +1087,72 @@
             container.appendChild(wrapper);
         }
 
-        // --- Controls Logic ---
-        function startSort() {
-            const arr = getInputArray();
-            if (arr.length === 0) return alert("Please enter numbers");
-            
-            if (currentMode === 'bubble') {
-                 // Convert numbers to objects for Bubble Sort stability
-                 animationFrames = generateBubbleFrames(arr); 
-            } else {
-                 animationFrames = generateMergeFrames(arr);
-            }
-            
-            currentFrameIndex = 0;
-            isPlaying = true;
-            document.getElementById('btn-start').innerHTML = '<i class="fas fa-redo mr-1"></i> Restart';
-            
-            // Clean slate for new sort
-            const container = document.getElementById('visualization-area');
+        function renderLinearSim(frame, container) {
             container.innerHTML = '';
+            const grid = document.createElement('div');
+            grid.className = "flex flex-wrap gap-2 justify-center mt-10";
             
-            renderFrame();
-            playLoop();
+            frame.arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                let style = "bg-white border-slate-300 text-slate-700";
+                
+                if (idx === frame.foundIdx) {
+                    style = "bg-green-100 border-green-500 text-green-700 scale-110 shadow-lg";
+                } else if (idx === frame.currentIdx) {
+                    style = "bg-yellow-50 border-yellow-500 text-yellow-700 scale-105 shadow";
+                } else if (idx < frame.currentIdx) {
+                    style = "bg-slate-100 border-slate-200 text-slate-400";
+                }
+
+                box.className = `w-14 h-14 flex items-center justify-center border-2 rounded-lg font-bold text-xl transition-all ${style}`;
+                box.innerText = val;
+                grid.appendChild(box);
+            });
+            container.appendChild(grid);
+        }
+
+        function renderBinarySim(frame, container) {
+            container.innerHTML = '';
+            const grid = document.createElement('div');
+            grid.className = "flex flex-wrap gap-2 justify-center mt-10 relative";
+            
+            frame.arr.forEach((val, idx) => {
+                const box = document.createElement('div');
+                let style = "bg-white border-slate-300 text-slate-700";
+                
+                // Mid highlight
+                if (idx === frame.mid) {
+                    style = "bg-purple-100 border-purple-500 text-purple-700 scale-105 shadow z-10";
+                }
+                // Found
+                if (idx === frame.foundIdx) {
+                    style = "bg-green-100 border-green-500 text-green-700 scale-110 shadow-lg z-20";
+                }
+                // Ignored
+                if (idx < frame.low || idx > frame.high) {
+                    style = "bg-slate-100 border-slate-200 text-slate-300 opacity-50";
+                }
+
+                box.className = `w-14 h-14 flex items-center justify-center border-2 rounded-lg font-bold text-xl transition-all relative ${style}`;
+                box.innerText = val;
+                
+                // Markers
+                if (idx === frame.low && frame.foundIdx === -1) {
+                    const l = document.createElement('div');
+                    l.className = "marker-arrow text-green-600";
+                    l.innerHTML = `Low`;
+                    box.appendChild(l);
+                }
+                if (idx === frame.high && frame.foundIdx === -1) {
+                    const h = document.createElement('div');
+                    h.className = "marker-arrow text-red-600";
+                    h.innerHTML = `High`;
+                    box.appendChild(h);
+                }
+                
+                grid.appendChild(box);
+            });
+            container.appendChild(grid);
         }
 
         function playLoop() {
@@ -1148,63 +1166,14 @@
                     playLoop();
                 } else {
                     isPlaying = false;
-                    document.getElementById('btn-pause').innerHTML = '<i class="fas fa-pause fa-lg"></i>';
+                    document.getElementById('btn-pause').innerHTML = '<i class="fas fa-play fa-lg"></i>';
                 }
             }, delay);
         }
-
-        function togglePause() {
-            if (isPlaying) {
-                isPlaying = false;
-                clearTimeout(timer);
-                document.getElementById('btn-pause').innerHTML = '<i class="fas fa-play fa-lg"></i>';
-            } else {
-                if (currentFrameIndex >= animationFrames.length - 1) currentFrameIndex = -1;
-                isPlaying = true;
-                document.getElementById('btn-pause').innerHTML = '<i class="fas fa-pause fa-lg"></i>';
-                playLoop();
-            }
-        }
-
-        function stepForward() {
-            isPlaying = false;
-            clearTimeout(timer);
-            if (currentFrameIndex < animationFrames.length - 1) {
-                currentFrameIndex++;
-                renderFrame();
-            }
-        }
-
-        function stepBackward() {
-            isPlaying = false;
-            clearTimeout(timer);
-            if (currentFrameIndex > 0) {
-                currentFrameIndex--;
-                renderFrame();
-            }
-        }
-
-        function resetApp() {
-            isPlaying = false;
-            clearTimeout(timer);
-            currentFrameIndex = -1;
-            animationFrames = [];
-            gameState.active = false;
-            document.getElementById('visualization-area').innerHTML = `
-                <div class="text-slate-400 mt-20 text-center">
-                    <i class="fas fa-chalkboard fa-3x mb-4 opacity-50"></i>
-                    <p>Enter numbers and press Start</p>
-                </div>
-            `;
-            document.getElementById('step-counter').innerText = "Step: 0";
-            document.getElementById('pass-counter').classList.add('hidden');
-            document.getElementById('status-text').innerText = "Ready to sort";
-            document.getElementById('btn-start').innerHTML = '<i class="fas fa-play mr-1"></i> Start';
-            document.getElementById('btn-pause').innerHTML = '<i class="fas fa-pause fa-lg"></i>';
-            document.getElementById('btn-prev').disabled = true;
-            document.getElementById('btn-next').disabled = true;
-        }
-
+        function togglePause() { if (isPlaying) { isPlaying = false; clearTimeout(timer); document.getElementById('btn-pause').innerHTML = '<i class="fas fa-play fa-lg"></i>'; } else { if (currentFrameIndex >= animationFrames.length - 1) currentFrameIndex = -1; isPlaying = true; document.getElementById('btn-pause').innerHTML = '<i class="fas fa-pause fa-lg"></i>'; playLoop(); } }
+        function stepForward() { isPlaying = false; clearTimeout(timer); if (currentFrameIndex < animationFrames.length - 1) { currentFrameIndex++; renderFrame(); } }
+        function stepBackward() { isPlaying = false; clearTimeout(timer); if (currentFrameIndex > 0) { currentFrameIndex--; renderFrame(); } }
+        function resetApp() { isPlaying = false; clearTimeout(timer); currentFrameIndex = -1; animationFrames = []; gameState.active = false; document.getElementById('visualization-area').innerHTML = '<div class="text-slate-400 mt-20 text-center"><i class="fas fa-chalkboard fa-3x mb-4 opacity-50"></i><p>Select Mode & Start</p></div>'; document.getElementById('step-counter').innerText = "Step: 0"; document.getElementById('pass-counter').classList.add('hidden'); document.getElementById('status-text').innerText = "Ready"; document.getElementById('btn-start').innerHTML = '<i class="fas fa-play mr-1"></i> Start'; document.getElementById('btn-pause').innerHTML = '<i class="fas fa-pause fa-lg"></i>'; document.getElementById('btn-prev').disabled = true; document.getElementById('btn-next').disabled = true; }
     </script>
 </body>
 </html>
